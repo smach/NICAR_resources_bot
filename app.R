@@ -403,6 +403,7 @@ server <- function(input, output, session) {
           "Learn how to display a massive dataset on an interactive map using PMTiles and MapLibre.\n\n",
 
           "After listing resources, call highlight_resources with the exact titles (not URLs). ",
+          "IMPORTANT: After calling highlight_resources, do NOT repeat or summarize the resources you already listed. The tool call should be the last thing you do.\n\n",
           "If no resources match, say so briefly."
         )
 
