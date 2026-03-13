@@ -681,8 +681,8 @@ server <- function(input, output, session) {
           }
         ),
         # Hidden columns (searchable)
-        URL = colDef(show = FALSE),
-        AdditionalComments = colDef(show = FALSE, searchable = TRUE)
+        URL = colDef(show = FALSE, filterable = FALSE),
+        AdditionalComments = colDef(show = FALSE, searchable = TRUE, filterable = FALSE)
       ),
       # Expandable row detail: shows Additional Comments
       details = function(index) {
@@ -752,7 +752,7 @@ server <- function(input, output, session) {
       language = reactableLang(
         searchPlaceholder = "Search resources (regex supported)"
       ),
-      filterable = FALSE,
+      filterable = TRUE,
       highlight = TRUE,
       bordered = TRUE,
       striped = FALSE,
