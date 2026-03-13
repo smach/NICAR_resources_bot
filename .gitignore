@@ -1,0 +1,25 @@
+# R
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+
+# Environment variables
+.Renviron
+
+# Logs
+logs/
+
+# IDE
+*.code-workspace
+.vscode/
+
+# Claude
+.claude/
+
+# Test scripts
+test_*.R
+
+# OS
+.DS_Store
+Thumbs.db
