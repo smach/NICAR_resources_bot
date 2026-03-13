@@ -750,7 +750,7 @@ server <- function(input, output, session) {
       }"
       ),
       language = reactableLang(
-        searchPlaceholder = "Search resources (regex supported)"
+        searchPlaceholder = "Search resources (regex supported in this field but not column filters below)"
       ),
       filterable = TRUE,
       highlight = TRUE,
