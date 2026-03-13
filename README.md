@@ -1,10 +1,10 @@
 # NICAR 2024-2026 Public Resources Explorer
 
-This repo contains code for an R Shiny app for to find resources from NICAR data journalism conferences. It features a chatbot that answers natural language questions about the resources, as well as a searchable, filterable table.
+This repo contains code for an R Shiny app for to find resources from NICAR data journalism conferences that have been made public. It features a chatbot that answers natural language questions about the resources, as well as a searchable, filterable table.
 
 This app was built using the same architecture as the [NICAR 2026 Session Explorer](https://github.com/smach/NICAR2026_chatbot), which has a chatbot and searchable table for the NICAR 2026 conference schedule. It took me a fair amount of time, and back & forth with Claude, to get that app right. However, re-purposing that idea and code for this slightly different data took very little additional time and effort. This is one of my favorite types of generative AI use cases: Re-use existing code you like for other data!
 
-Note: ]My database of NICAR conference resources](https://apps.machlis.com/shiny/nicar20_resources/) goes back to 2020. However, because a fair amount has changed in the technical coding space recently, I decided to stick to 2024-2026 for this.
+Note: [My database of NICAR conference resources](https://apps.machlis.com/shiny/nicar20_resources/) goes back to 2020. However, because a fair amount has changed in the technical coding space recently, I decided to stick to 2024-2026 for this.
 
 The rest of this README below was written largely by Claude and lightly edited by me.
 
