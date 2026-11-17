@@ -19,6 +19,10 @@ if (file.exists(".Renviron")) {
   readRenviron(".Renviron")
 }
 
+# The one place the chat model is named; the usage log reads it too.
+# OPENAI_API_KEY covers both this and the text-embedding-3-small query embeddings.
+chat_model <- "gpt-5.4-mini"
+
 ui <- page_fillable(
   theme = custom_theme,
 
@@ -179,6 +183,17 @@ server <- function(input, output, session) {
     tags = NULL,
     top_k = 20
   ) {
+    # OpenAI models send every optional argument, using an empty value when
+    # they mean "no filter". Treat NULL, "", NA and empty lists all as absent
+    # so an empty filter can never silently remove every result.
+    is_blank <- function(x) {
+      length(x) == 0 || all(is.na(unlist(x))) || !any(nzchar(trimws(unlist(x))))
+    }
+    if (is_blank(year)) year <- NULL
+    if (is_blank(type) || identical(type, "Any")) type <- NULL
+    if (is_blank(tags)) tags <- NULL
+    if (is_blank(top_k)) top_k <- 20
+
     filter_components <- list()
 
     if (!is.null(year)) {
@@ -263,24 +278,24 @@ server <- function(input, output, session) {
 
   # Show API key modal on startup if no key in environment
   observe({
-    env_key <- Sys.getenv("GEMINI_API_KEY")
+    env_key <- Sys.getenv("OPENAI_API_KEY")
     if (env_key == "" && is.null(user_api_key())) {
       showModal(modalDialog(
-        title = "Gemini API Key Required",
+        title = "OpenAI API Key Required",
         p(
-          "This app uses Google's Gemini 2.5 Flash to answer questions about NICAR resources."
+          "This app uses an OpenAI model to answer questions about NICAR resources."
         ),
         p(
-          "Please enter your Google Gemini API key to use the chat feature. There is a free tier."
+          "Please enter your OpenAI API key to use the chat feature."
         ),
         p(tags$a(
-          "Get an API key in Google's AI Studio",
-          href = "https://aistudio.google.com/api-keys",
+          "Get an API key from the OpenAI developer platform",
+          href = "https://platform.openai.com",
           target = "_blank"
         )),
         textInput(
           "api_key_input",
-          "Your Google API Key:",
+          "Your OpenAI API Key:",
           placeholder = "..."
         ),
         p(tags$small(
@@ -309,7 +324,7 @@ server <- function(input, output, session) {
   })
 
   active_api_key <- reactive({
-    env_key <- Sys.getenv("GEMINI_API_KEY")
+    env_key <- Sys.getenv("OPENAI_API_KEY")
     if (env_key != "") {
       return(env_key)
     }
@@ -323,7 +338,7 @@ server <- function(input, output, session) {
       return()
     }
 
-    Sys.setenv(GEMINI_API_KEY = api_key)
+    Sys.setenv(OPENAI_API_KEY = api_key)
 
     tryCatch(
       {
@@ -342,17 +357,22 @@ server <- function(input, output, session) {
               required = FALSE
             ),
             type = type_enum(
+              # OpenAI models must pick one of these on every call, so "Any"
+              # is the explicit no-filter choice (search_resources drops it).
+              # "Unspecified" is also a Type in the data but is left out on
+              # purpose: gpt-5.4-mini chose it every time to mean "any type",
+              # which filtered out nearly everything.
               values = c(
+                "Any",
                 "Presentation, Workshop, Repo or Tip Sheet",
                 "Tool, Software or Resource",
-                "Work Samples",
-                "Unspecified"
+                "Work Samples"
               ),
-              description = "Filter by resource type.",
+              description = "Filter by resource type. Use 'Any' unless the user explicitly asks for one of the specific types.",
               required = FALSE
             ),
             tags = type_string(
-              "Filter by tag (e.g., '#python', '#genai', '#maps'). Tags are lowercase. Use a single tag for filtering; the search will find resources containing that tag among their multiple tags.",
+              "Filter by tag (e.g., '#python', '#genai', '#maps'). ONLY use when the user explicitly names a tag; otherwise leave it empty and rely on the query. Tags are lowercase. Use a single tag for filtering; the search will find resources containing that tag among their multiple tags.",
               required = FALSE
             ),
             top_k = type_integer(
@@ -407,9 +427,9 @@ server <- function(input, output, session) {
           "If no resources match, say so briefly."
         )
 
-        chat <- chat_google_gemini(
+        chat <- chat_openai(
           system_prompt = system_prompt,
-          model = "gemini-2.5-flash",
+          model = chat_model,
           echo = "none"
         )
 
@@ -503,7 +523,7 @@ server <- function(input, output, session) {
               log_api_usage(
                 input_tokens = usage$input_tokens,
                 output_tokens = usage$output_tokens,
-                model = "gemini-2.5-flash",
+                model = chat_model,
                 key_source = key_source()
               )
             }

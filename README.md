@@ -48,16 +48,14 @@ pak::pak("posit-dev/ragnar")
 ```
 
 ### API Keys
-You need a **Google Gemini API key** for the chat functionality. Google has a free tier for Gemini 2.5 Flash, so you can try it out locally for free.
-
-If you want to regenerate the ragnar data store from scratch, you'll also need an **OpenAI API key** for the text embeddings.
+You need an **OpenAI API key**. It is used for the chat (currently `gpt-5.4-mini`, set as `chat_model` at the top of `app.R`) and for the text embeddings, both when searching and when regenerating the ragnar data store.
 
 ```r
 # Set in .Renviron file
-GEMINI_API_KEY=your-key-here
+OPENAI_API_KEY=your-key-here
 
 # Or set in R session
-Sys.setenv(GEMINI_API_KEY = "your-key-here")
+Sys.setenv(OPENAI_API_KEY = "your-key-here")
 ```
 
 If no key is set, the app will prompt you to enter one at startup.
@@ -147,7 +145,7 @@ After the AI finds resources, a **"See These [number] Resources in Table"** butt
 - **Conference**: [NICAR](https://www.ire.org/training/conferences/nicar-2026/) by IRE (Investigative Reporters and Editors)
 - **Based on**: [NICAR 2026 Session Explorer](https://github.com/smach/NICAR2026_chatbot) also by Claude and me
 - **Packages**: [shinychat](https://github.com/posit-dev/shinychat), [ellmer](https://github.com/posit-dev/ellmer), [ragnar](https://github.com/posit-dev/ragnar) by Posit
-- **AI**: Google Gemini 2.5 Flash for chat, OpenAI text-embedding-3-small for embeddings, Claude for writing much of the code
+- **AI**: OpenAI gpt-5.4-mini for chat, OpenAI text-embedding-3-small for embeddings, Claude for writing much of the code
 
 ## Disclaimer
 

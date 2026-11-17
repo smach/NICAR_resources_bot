@@ -1,5 +1,5 @@
 # helpers_logging.R
-# Token usage logging and cost tracking for Gemini API
+# Token usage logging and cost tracking for the chat model
 # Supports local CSV logging and optional Supabase PostgreSQL for cloud deployment
 #
 # LOGGING: Disabled by default. Set NICAR_CHATBOT_LOG_USAGE=true in .Renviron to enable.
@@ -12,24 +12,24 @@ logging_enabled <- function() {
  tolower(Sys.getenv("NICAR_CHATBOT_LOG_USAGE", "false")) == "true"
 }
 
-# Pricing constants for gemini-2.5-flash
-# As of Feb 2025: $0.30 per million input tokens, $2.50 per million output tokens
-GEMINI_FLASH_PRICING <- list(
-  input_per_million = 0.30,
-  output_per_million = 2.50
+# Price per million tokens, by model. A model with no entry here is still
+# logged with its token counts, but its cost columns are NA rather than a guess.
+# gemini-2.5-flash (the chat model until Nov 2026), as of Feb 2025: $0.30 in, $2.50 out.
+MODEL_PRICING <- list(
+  "gemini-2.5-flash" = list(input_per_million = 0.30, output_per_million = 2.50)
 )
 
 #' Calculate cost from token counts
 #' @param input_tokens Number of input tokens
 #' @param output_tokens Number of output tokens
-#' @param model Model name (for future extensibility)
-#' @return List with input_cost, output_cost, and total_cost
-calculate_cost <- function(
-  input_tokens,
-  output_tokens,
-  model = "gemini-2.5-flash"
-) {
-  pricing <- GEMINI_FLASH_PRICING
+#' @param model Model name, looked up in MODEL_PRICING
+#' @return List with input_cost, output_cost, and total_cost (all NA if the
+#'   model has no pricing entry)
+calculate_cost <- function(input_tokens, output_tokens, model) {
+  pricing <- MODEL_PRICING[[model]]
+  if (is.null(pricing)) {
+    return(list(input_cost = NA_real_, output_cost = NA_real_, total_cost = NA_real_))
+  }
   input_cost <- (input_tokens / 1e6) * pricing$input_per_million
   output_cost <- (output_tokens / 1e6) * pricing$output_per_million
   list(
@@ -341,7 +341,9 @@ log_api_usage <- function(
 
   log_entry <- data.frame(
     timestamp = format(timestamp, "%Y-%m-%d %H:%M:%S"),
-    date = as.character(as.Date(timestamp)),
+    # Local date, matching get_daily_summary(); as.Date() on a timestamp
+    # converts to UTC, which files evening requests under the next day
+    date = format(timestamp, "%Y-%m-%d"),
     model = model,
     key_source = key_source,
     input_tokens = input_tokens,
@@ -420,7 +422,7 @@ get_daily_summary <- function(date = Sys.Date()) {
     total_requests = nrow(daily),
     total_input_tokens = sum(daily$input_tokens),
     total_output_tokens = sum(daily$output_tokens),
-    total_cost = sum(daily$total_cost)
+    total_cost = sum(daily$total_cost, na.rm = TRUE)
   )
 }
 

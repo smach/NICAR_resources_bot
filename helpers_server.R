@@ -16,7 +16,7 @@ handle_question_button <- function(query, chat_obj) {
             log_api_usage(
               input_tokens = usage$input_tokens,
               output_tokens = usage$output_tokens,
-              model = "gemini-2.5-flash"
+              model = chat_model
             )
           }
         }) %>%
